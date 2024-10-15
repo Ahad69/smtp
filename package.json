@@ -1,0 +1,15 @@
+
+
+{
+  "name": "smtp",
+  "version": "0.1.0",
+  "private": true,
+"scripts": {
+  "start-project1": "cd smtp-backend && npm run dev",
+  "start-project2": "cd smtp-front-end && npm run dev",
+  "start": "concurrently \"npm run start-project1\" \"npm run start-project2\""
+},
+ "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}

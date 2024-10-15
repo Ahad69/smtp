@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body, html {
+    height: 100%;
+    margin: 0;
+    background: #242424 !important;
+}
+
+.email-svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 400px;
+    height: 400px;
+    filter: blur(20px);
+    transform: translate(-50%, -50%);
+}
+
+@keyframes gradientAnimation {
+  0% {
+        stop-color: rgba(100, 150, 200, 0.5);
+    }
+    25% {
+        stop-color: rgba(150, 200, 250, 0.5);
+    }
+    50% {
+        stop-color: rgba(200, 250, 200, 0.5);
+    }
+    75% {
+        stop-color: rgba(250, 200, 150, 0.5);
+    }
+    100% {
+        stop-color: rgba(200, 150, 100, 0.5);
+    }
+}
