@@ -62,7 +62,6 @@ router.post("/", upload.single("file"), async (req, res) => {
   let totalSent = 0;
   let totalRejected = 0;
   let userIndex = 0; // Track the current user index
-  let currentUserSent = 0; // Track the number of emails sent by the current user
   let failedEmails = [];
 
   // Helper function to introduce a delay
@@ -112,10 +111,18 @@ router.post("/", upload.single("file"), async (req, res) => {
             let info = await transporter.sendMail(mailOptions);
             totalSent += info.accepted?.length || 0;
             totalRejected += info.rejected?.length || 0;
-            currentUserSent++; // Increment the sent count for the current user
-            console.log(`email sent to ${recipient}`);
+            console.log(`Email sent to ${recipient}`);
           } catch (error) {
             console.error(`Error sending email to ${recipient}:`, error);
+
+            // Switch user if quota exceeded
+            if (error.response && error.response.includes("Quota exceeded")) {
+              userIndex = (userIndex + 1) % users.length; // Move to the next user
+              console.log(
+                `Switching to the next user: ${users[userIndex].email}`
+              );
+            }
+
             failedEmails.push(recipient);
           }
         })
@@ -124,29 +131,16 @@ router.post("/", upload.single("file"), async (req, res) => {
       await Promise.all(emailPromises);
     };
 
-    // Check and switch users if the current user limit is reached
-    const checkAndSwitchUser = () => {
-      const currentUser = users[userIndex];
-      if (currentUserSent >= currentUser.limit) {
-        userIndex = (userIndex + 1) % users.length; // Move to the next user
-        currentUserSent = 0; // Reset the sent count for the new user
-      }
-    };
-
     let currentBatch = [];
     for (let i = 0; i < emailList.length; i++) {
       currentBatch.push(emailList[i]);
-      if (
-        currentBatch.length === users[userIndex].limit ||
-        i === emailList.length - 1
-      ) {
+      if (currentBatch.length === 5 || i === emailList.length - 1) {
         const user = users[userIndex];
         await sendBatch(currentBatch, user);
         currentBatch = []; // Reset batch
-        checkAndSwitchUser(); // Check if we need to switch users
 
         if (i < emailList.length - 1) {
-          await delay(3000); // Wait for 4 seconds before sending the next email
+          await delay(3000); // Wait for 3 seconds before sending the next email
         }
       }
     }
@@ -166,6 +160,5 @@ router.post("/", upload.single("file"), async (req, res) => {
     res.status(500).send("Error sending emails");
   }
 });
-
 
 module.exports = router;
